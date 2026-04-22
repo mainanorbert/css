@@ -1,9 +1,10 @@
-"""ORM models for user identity, tenant companies, and document ingestion state."""
+"""ORM models for user identity, tenant companies, document state, and spend tracking."""
 
 import uuid
+from decimal import Decimal
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, JSON, Numeric, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.database import Base
@@ -50,6 +51,40 @@ class Company(Base):
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
+    )
+
+
+class UserSpend(Base):
+    """Cumulative spend and token usage totals for a single authenticated user."""
+
+    __tablename__ = "user_spend"
+
+    user_id: Mapped[str] = mapped_column(
+        Text,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    total_cost_usd: Mapped[Decimal] = mapped_column(
+        Numeric(12, 6),
+        nullable=False,
+        default=Decimal("0"),
+        server_default="0",
+    )
+    total_requests: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    total_prompt_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    total_completion_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    total_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
 

@@ -11,6 +11,7 @@ from src.api.v1.schemas.agent import AgentChatRequest, AgentChatResponse
 from src.core.clerk_auth import get_authenticated_user_identity, require_clerk_session
 from src.core.config import Settings
 from src.core.dependencies import get_db_session, get_openrouter_client, get_settings
+from src.services.cost_monitoring import merge_usage_charges, record_user_spend
 from src.services.ingestion import get_owned_company, upsert_user
 from src.services.rag_agent import run_rag_agent
 
@@ -40,7 +41,7 @@ async def post_agent_chat(
     company = get_owned_company(db_session, company_id=body.company_id, owner_id=user.id)
     db_session.commit()
 
-    reply, grounded = await run_rag_agent(
+    reply, grounded, usage_charges = await run_rag_agent(
         async_client=client,
         db_session=db_session,
         company_id=company.id,
@@ -51,6 +52,16 @@ async def post_agent_chat(
         embedding_dimensions=settings.embedding_dimensions,
         top_k=settings.rag_top_k,
         similarity_threshold=settings.rag_similarity_threshold,
+        openrouter_api_key=settings.openrouter_api_key,
+        openrouter_base_url=settings.openrouter_base_url,
     )
+    if usage_charges:
+        record_user_spend(
+            db_session,
+            user_id=user.id,
+            email=user.email,
+            charge=merge_usage_charges(usage_charges),
+        )
+        db_session.commit()
 
     return AgentChatResponse(reply=reply, grounded=grounded)

@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 
 from src.core.config import Settings
 from src.core.database import create_database_engine, create_session_factory
-from src.models import Document, DocumentChunk, EMBEDDING_SCHEMA_DIMENSION, generate_uuid
+from src.models import Document, DocumentChunk, EMBEDDING_SCHEMA_DIMENSION, User, generate_uuid
 from src.services.chunking import chunk_plain_text
+from src.services.cost_monitoring import UsageCharge, record_user_spend
 from src.services.document_text import UnsupportedDocumentFormatError, extract_document_text
 from src.services.embeddings import embed_texts_sync
 from src.services.ingestion import (
@@ -61,13 +62,21 @@ def run_embedding_pipeline_for_company(
             if document is None or document.is_embedded:
                 continue
             try:
-                _embed_single_document(
+                usage_charge = _embed_single_document(
                     session,
                     client=client,
                     settings=settings,
                     upload_root=upload_root,
                     document=document,
                 )
+                if usage_charge is not None:
+                    uploaded_by = session.get(User, document.uploaded_by)
+                    record_user_spend(
+                        session,
+                        user_id=document.uploaded_by,
+                        email=None if uploaded_by is None else uploaded_by.email,
+                        charge=usage_charge,
+                    )
                 session.commit()
             except Exception:
                 session.rollback()
@@ -103,8 +112,8 @@ def _embed_single_document(
     settings: Settings,
     upload_root: str,
     document: Document,
-) -> None:
-    """Extract text for one document, replace its chunks, and flip ingestion flags."""
+) -> UsageCharge | None:
+    """Extract text for one document, replace chunks, and return billed embedding usage."""
     document.status = DOCUMENT_STATUS_PROCESSING
     session.flush()
 
@@ -121,13 +130,13 @@ def _embed_single_document(
         document.status = DOCUMENT_STATUS_FAILED
         document.is_embedded = False
         session.flush()
-        return
+        return None
     except (ExternalStorageError, OSError, FileNotFoundError, ValueError) as exc:
         logger.warning("Document %s extraction error: %s", document.id, exc)
         document.status = DOCUMENT_STATUS_FAILED
         document.is_embedded = False
         session.flush()
-        return
+        return None
 
     document.file_content = text
     if not text.strip():
@@ -135,7 +144,7 @@ def _embed_single_document(
         document.status = DOCUMENT_STATUS_FAILED
         document.is_embedded = False
         session.flush()
-        return
+        return None
 
     chunk_rows = chunk_plain_text(
         text,
@@ -151,10 +160,10 @@ def _embed_single_document(
         document.status = DOCUMENT_STATUS_FAILED
         document.is_embedded = False
         session.flush()
-        return
+        return None
 
     chunk_texts = [content for _index, content, _meta in chunk_rows]
-    vectors = embed_texts_sync(
+    vectors, usage_charge = embed_texts_sync(
         client,
         chunk_texts,
         model=settings.embedding_model,
@@ -177,3 +186,4 @@ def _embed_single_document(
     document.is_embedded = True
     document.status = DOCUMENT_STATUS_COMPLETED
     session.flush()
+    return usage_charge
