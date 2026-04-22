@@ -74,7 +74,22 @@ class Settings(BaseSettings):
     )
     upload_root: str = Field(
         default="./storage",
-        description="Root directory where uploaded files are stored locally",
+        description="Root directory where uploaded files are stored locally when Supabase is not configured",
+    )
+    supabase_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SUPABASE_URL"),
+        description="Supabase project URL used for server-side Storage access",
+    )
+    supabase_service_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SUPABASE_SERVICE_KEY", "SUPABASE_SECRET_KEY", "SUPABASE_KEY"),
+        description="Server-only Supabase API key used to bypass Storage RLS from the backend",
+    )
+    supabase_bucket: str = Field(
+        default="documents",
+        validation_alias=AliasChoices("SUPABASE_BUCKET", "SUPABASE_STORAGE_BUCKET"),
+        description="Supabase Storage bucket name for uploaded document binaries",
     )
     cors_allowed_origins: str = Field(
         default="https://css-f-brown.vercel.app",
@@ -97,4 +112,13 @@ class Settings(BaseSettings):
         """Normalize postgres:// shorthand to the SQLAlchemy psycopg2 dialect prefix."""
         if isinstance(v, str) and v.startswith("postgres://"):
             return v.replace("postgres://", "postgresql+psycopg2://", 1)
+        return v
+
+    @field_validator("supabase_url", mode="before")
+    @classmethod
+    def normalize_supabase_url(cls, v: str | None) -> str | None:
+        """Remove trailing slashes from the configured Supabase project URL."""
+        if isinstance(v, str):
+            stripped = v.strip()
+            return stripped.rstrip("/") or None
         return v

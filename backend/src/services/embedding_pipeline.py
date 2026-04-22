@@ -18,6 +18,7 @@ from src.services.ingestion import (
     DOCUMENT_STATUS_PROCESSING,
 )
 from src.services.openrouter_agent import create_openrouter_sync_client
+from src.services.supabase_storage import ExternalStorageError
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +110,7 @@ def _embed_single_document(
 
     try:
         text = extract_document_text(
+            settings=settings,
             upload_root=upload_root,
             file_path=document.file_path,
             file_name=document.file_name,
@@ -120,7 +122,7 @@ def _embed_single_document(
         document.is_embedded = False
         session.flush()
         return
-    except (OSError, FileNotFoundError, ValueError) as exc:
+    except (ExternalStorageError, OSError, FileNotFoundError, ValueError) as exc:
         logger.warning("Document %s extraction error: %s", document.id, exc)
         document.status = DOCUMENT_STATUS_FAILED
         document.is_embedded = False

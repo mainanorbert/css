@@ -12,13 +12,15 @@ from src.core.database import Base
 from src.core.dependencies import get_database_engine, get_settings
 from src.core.pgvector_setup import database_url_is_postgresql, ensure_pgvector_extension
 import src.models  # noqa: F401
+from src.services.supabase_storage import uses_supabase_storage
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """Ensure local storage directory exists and database tables are created."""
+    """Ensure required storage resources and database tables are ready."""
     settings: Settings = get_settings()
-    Path(settings.upload_root).expanduser().resolve().mkdir(parents=True, exist_ok=True)
+    if not uses_supabase_storage(settings):
+        Path(settings.upload_root).expanduser().resolve().mkdir(parents=True, exist_ok=True)
     engine = get_database_engine(settings.database_url)
     if database_url_is_postgresql(settings.database_url):
         ensure_pgvector_extension(engine)

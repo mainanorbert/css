@@ -15,4 +15,5 @@ dependencies = [
     "pypdf>=5.1.0",
     "sqlalchemy>=2.0.41",
     "openai-agents>=0.14.3",
+    "httpx>=0.28.1",
 ]
