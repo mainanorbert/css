@@ -124,6 +124,49 @@ class Document(Base):
     )
 
 
+class GuardrailEvent(Base):
+    """Audit row for prompts/responses that triggered a safety guardrail.
+
+    Stores both the user message and the assistant reply so reviewers can see
+    full context for monitored or blocked interactions (PII leakage, oversized
+    prompts, etc.). Access to this table should be restricted to operators.
+    """
+
+    __tablename__ = "guardrail_events"
+    __table_args__ = (
+        Index("ix_guardrail_events_user_id", "user_id"),
+        Index("ix_guardrail_events_company_id", "company_id"),
+        Index("ix_guardrail_events_created_at", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    company_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    event_type: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        doc="Stable identifier for the rule, e.g. 'input_token_limit' or 'output_pii'.",
+    )
+    action: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        doc="Outcome of the guardrail decision: 'blocked' or 'monitored'.",
+    )
+    matched_rules: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+        doc="Structured detail about which sub-rules fired (e.g. ['email','kenyan_phone']).",
+    )
+    prompt_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    response_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    input_token_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+
 class DocumentChunk(Base):
     """Text segment and embedding vector for RAG; tenant-scoped via ``company_id``."""
 
