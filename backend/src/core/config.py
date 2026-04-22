@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     )
     clerk_secret_key: str = Field(..., description="Clerk secret key for verifying session JWTs")
     clerk_authorized_parties: str = Field(
-        default="http://localhost:3000,http://127.0.0.1:3000",
+        default="https://css-f-brown.vercel.app",
         description="Comma-separated frontend origins allowed in Clerk session tokens (azp)",
     )
     database_url: str = Field(
@@ -75,6 +75,20 @@ class Settings(BaseSettings):
     upload_root: str = Field(
         default="./storage",
         description="Root directory where uploaded files are stored locally",
+    )
+    cors_allowed_origins: str = Field(
+        default="https://css-f-brown.vercel.app",
+        description=(
+            "Comma-separated browser origins allowed to call this API (CORS). "
+            "Set explicitly in production to your deployed frontend origin(s)."
+        ),
+    )
+    cors_allow_credentials: bool = Field(
+        default=False,
+        description=(
+            "Whether browsers may send credentialed cross-origin requests (cookies). "
+            "Enable only if your frontend uses credentials mode for API calls."
+        ),
     )
 
     @field_validator("database_url", mode="before")
