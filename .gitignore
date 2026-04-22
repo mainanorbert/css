@@ -178,7 +178,7 @@ Pipfile.lock
 # =========================
 # UV (modern Python package manager)
 # =========================
-uv.lock
+
 
 # =========================
 # Secrets / keys
