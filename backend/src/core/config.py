@@ -52,6 +52,30 @@ class Settings(BaseSettings):
         le=20,
         description="Number of nearest chunks to retrieve per query",
     )
+    guardrail_max_input_tokens: int = Field(
+        default=500,
+        ge=16,
+        le=8000,
+        description=(
+            "Maximum number of tokens permitted in a single user prompt. Requests above this "
+            "limit are rejected before any embedding or LLM call so cost stays predictable and "
+            "answers stay focused. Tune via GUARDRAIL_MAX_INPUT_TOKENS in .env."
+        ),
+    )
+    guardrail_token_encoding: str = Field(
+        default="cl100k_base",
+        description=(
+            "tiktoken encoding name used for input token counting. cl100k_base is correct for "
+            "GPT-4 / GPT-3.5 / text-embedding-3-* models and is a safe default for OpenRouter."
+        ),
+    )
+    guardrail_phone_country_code: str = Field(
+        default="254",
+        description=(
+            "Country dialing code (without '+') used to detect monitored phone numbers in "
+            "model replies. Defaults to Kenya (+254)."
+        ),
+    )
     rag_similarity_threshold: float = Field(
         default=0.25,
         ge=0.0,
