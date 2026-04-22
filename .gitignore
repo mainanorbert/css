@@ -1,0 +1,195 @@
+# =========================
+# Python bytecode / cache
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# C extensions
+# =========================
+*.so
+
+# =========================
+# Distribution / packaging
+# =========================
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# =========================
+# Virtual environments
+# =========================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =========================
+# Environment variables
+# =========================
+.env.*
+*.env
+
+# =========================
+# Logs & databases
+# =========================
+*.log
+*.sqlite3
+*.db
+
+# =========================
+# Unit test / coverage
+# =========================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# =========================
+# Type checkers
+# =========================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints
+
+# =========================
+# PyCharm / IntelliJ
+# =========================
+.idea/
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Sublime / other editors
+# =========================
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# PyInstaller
+# =========================
+*.manifest
+*.spec
+
+# =========================
+# Installer logs
+# =========================
+pip-log.txt
+pip-delete-this-directory.txt
+
+# =========================
+# Documentation builds
+# =========================
+docs/_build/
+
+# =========================
+# Flask / Django stuff
+# =========================
+instance/
+.webassets-cache
+*.mo
+*.pot
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# =========================
+# FastAPI / uvicorn
+# =========================
+*.pid
+
+# =========================
+# Celery
+# =========================
+celerybeat-schedule
+celerybeat.pid
+
+# =========================
+# Sphinx
+# =========================
+_build/
+
+# =========================
+# Pytest
+# =========================
+.pytest_cache/
+
+# =========================
+# Ruff / linters
+# =========================
+.ruff_cache/
+
+# =========================
+# Poetry
+# =========================
+poetry.lock
+
+# =========================
+# Pipenv
+# =========================
+Pipfile.lock
+
+# =========================
+# UV (modern Python package manager)
+# =========================
+uv.lock
+
+# =========================
+# Secrets / keys
+# =========================
+*.pem
+*.key
+*.crt
+
+# =========================
+# Temporary files
+# =========================
+*.swp
+*.swo
+*~
