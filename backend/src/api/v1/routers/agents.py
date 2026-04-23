@@ -46,7 +46,6 @@ async def post_agent_chat(
     company = get_owned_company(db_session, company_id=body.company_id, owner_id=user.id)
     db_session.commit()
 
-    reply, grounded, usage_charges = await run_rag_agent(
     input_check = evaluate_input(
         message=body.message,
         max_tokens=settings.guardrail_max_input_tokens,
